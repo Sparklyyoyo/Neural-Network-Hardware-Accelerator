@@ -77,6 +77,129 @@ The SoC integrates multiple components:
 
 The CPU orchestrates operations, loads input images and network weights into SDRAM, and triggers the accelerators to perform inference.
 
+
+Where `W` is the weight matrix, `a` is the input vector, `b` is the bias vector, and `a'` is the output activation vector.
+
+All computations are performed in **Q16.16 fixed-point format** to balance precision with hardware efficiency.
+
+---
+
+## System Architecture
+
+The project builds a complete FPGA-based Nios II system with:
+
+1. **External SDRAM Interface:** Stores neural network weights, biases, and input data.  
+2. **Phase-Locked Loop (PLL):** Generates stable 50 MHz clock signals with phase adjustments for SDRAM timing.  
+3. **Avalon Memory-Mapped Interfaces:** Facilitates communication between CPU and hardware accelerators.  
+4. **Custom Hardware Accelerators:** Implemented as Avalon IP components to accelerate memory copying and dot product calculations.  
+5. **VGA Output Module:** Optional grayscale visualization of input data for testing purposes.
+
+---
+
+## Key Components
+
+### 1. SDRAM & PLL Integration
+
+- Configured SDRAM controller for 64 MB external memory.  
+- PLL generates two clocks:
+  - `outclk0` → Main system modules  
+  - `outclk1` → SDRAM interface (phase-shifted to account for signal delay)  
+- Nios II system uses on-chip memory for instruction storage and off-chip SDRAM for data.
+
+---
+
+### 2. VGA Core Wrapper
+
+- Created an **Avalon memory-mapped wrapper** for the VGA module.  
+- Allows the CPU to plot pixels via a 32-bit word protocol:
+  - Bits 30–24: Y-coordinate  
+  - Bits 23–16: X-coordinate  
+  - Bits 7–0: Brightness (0–255)  
+- Supports grayscale visualization with weighted neighborhood averaging.  
+- Useful for debugging and displaying input images on hardware.
+
+---
+
+### 3. Memory Copy Accelerator (WordCopy)
+
+- Custom DMA-style accelerator to move blocks of memory without CPU involvement.  
+- Avalon interface offsets:
+  - `0`: Start copy / poll completion  
+  - `1`: Destination address  
+  - `2`: Source address  
+  - `3`: Number of 32-bit words  
+- Handles repeated requests and manages waitrequest/readdatavalid signaling.  
+- Optimizes memory transfer performance for subsequent DNN computation.
+
+---
+
+### 4. Dot Product Accelerator
+
+- Hardware module for computing **vector dot products** in Q16.16 fixed-point.  
+- Supports bias addition and optional ReLU activation.  
+- Avalon interface offsets:
+  - `0`: Start / stall for result  
+  - `2`: Weight matrix address  
+  - `3`: Input vector address  
+  - `5`: Vector length  
+- Offloads computationally intensive matrix-vector multiplications from the CPU.  
+- Used by the `run_nn.c` software to accelerate inference.
+
+---
+
+### 5. Optimized Dot Product (DotOpt)
+
+- High-performance version of the dot product accelerator with **dual Avalon master ports**:  
+  - Port 1: SDRAM  
+  - Port 2: On-chip SRAM banks (for input activation reuse)  
+- Exploits **data locality** to reduce repeated off-chip memory accesses.  
+- Designed to perform concurrent reads of weights and activations.  
+- Improves inference speed and energy efficiency, illustrating hardware-software co-design principles.
+
+---
+
+## Fixed-Point Computation (Q16.16)
+
+- 32-bit signed representation: upper 16 bits integer, lower 16 bits fraction.  
+- Multiplication requires fractional point adjustments (truncation used for simplicity).  
+- All weights, biases, and activations stored in Q16.16 format for consistent precision across modules.
+
+---
+
+## Testing & Verification
+
+- RTL unit tests implemented in **SystemVerilog**:
+  - `tb_rtl_wordcopy.sv` → validates memory copy functionality  
+  - `tb_rtl_dot.sv` → validates dot product computations  
+- Functional software tests via `run_nn.c` on the Nios II processor.  
+- Optional VGA output used to visualize input patterns and verify memory content.  
+- Memory initialization and simulation performed with ModelSim using `$readmemh()` for binary weights and inputs.
+
+---
+
+## Key Skills Demonstrated
+
+- FPGA SoC design using **Intel Platform Designer**  
+- Hardware-software co-design for DNN inference  
+- Custom Avalon memory-mapped IP development  
+- Fixed-point arithmetic and Q-format computation  
+- System verification and ModelSim simulation  
+- Memory hierarchy optimization for performance and energy efficiency  
+
+---
+
+## Usage
+
+1. Load Nios II system onto DE1-SoC.  
+2. Copy neural network weights (`nn.bin`) and input images (`test_00.bin`) into SDRAM.  
+3. Run `run_nn.c` to perform inference using the custom accelerators.  
+4. (Optional) Display input or output using the VGA module.  
+
+---
+
+This project showcases **practical experience in FPGA-based deep learning acceleration**, combining low-level RTL design, system integration, and high-level software control—skills highly relevant to modern heterogeneous computing environments, such as AMD hardware accelerators.
+
+
 ---
 
 ## Simulation and Testing
