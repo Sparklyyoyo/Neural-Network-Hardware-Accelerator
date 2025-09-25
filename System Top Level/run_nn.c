@@ -1,22 +1,10 @@
 /*
- *
- *
- *
- *
- *
- *
- * WARNING
- *
- *
- * Much of this code has been modified from it's prior version.
- *
- * The prior version (visible in git history) was tested. This version has not been tested.
- *
- *
- *
- *
- *
- *
+ * DISCLAIMER: run_nn.c was provided by the UBC teaching team.
+ * 
+ * MY TASKS:
+ * Inputted the memory-mapped I/O addresses for the the peripherals.
+ * Implemented the wordcopy_hw() function to use the wordcopy accelerator.
+ * Implemented the dotprod_hw() function to use the dot product accelerator.
  */
 
 // note: only **one** of the options below should be 1

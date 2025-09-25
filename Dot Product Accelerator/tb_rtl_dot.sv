@@ -1,47 +1,48 @@
+/*
+--- File:    tb_rtl_dot.sv
+--- Module:  tb_rtl_dot
+--- Brief:   Testbench driving the 'dot' accelerator via simple stimulus and immediate assertions.
+
+--- Description:
+---   Instantiates 'dot' with wildcard port connections and steps through IDLE→READ_W→STORE→READ_A→CALCULATE
+---   sequences while checking visible DUT behavior with immediate assertions.
+---   Notes: master2_* signals and some assertions appear in comments or as undeclared references here;
+---   they were left intact intentionally (formatting-only pass).
+
+--- Interfaces:
+---   Drives: clk, rst_n, slave_*, master_* (matching 'dot' ports).
+---   Observes: slave_readdata, slave_waitrequest, master_*.
+
+--- Author: Joey Negm
+*/
+
 module tb_rtl_dot();
 
+    // --- Signals ---
+    logic        clk;
+    logic        rst_n;
 
-    logic clk;
-    logic rst_n;
-    logic slave_waitrequest;
-    logic [3:0] slave_address;
-    logic slave_read;
+    // Slave (CPU-facing)
+    logic        slave_waitrequest;
+    logic [3:0]  slave_address;
+    logic        slave_read;
     logic [31:0] slave_readdata;
-    logic slave_write;
+    logic        slave_write;
     logic [31:0] slave_writedata;
-    logic master_waitrequest;
+
+    // Master (memory-facing)
+    logic        master_waitrequest;
     logic [31:0] master_address;
-    logic master_read;
+    logic        master_read;
     logic [31:0] master_readdata;
-    logic master_readdatavalid;
-    logic master_write;
+    logic        master_readdatavalid;
+    logic        master_write;
     logic [31:0] master_writedata;
 
+    // --- DUT ---
     dot dut(.*);
 
-
-    /* Inputs
-    input logic clk
-    input logic rst_n
-    input logic [3:0] slave_address
-    input logic slave_read
-    input logic slave_write
-    input logic [31:0] slave_writedata
-    input logic master_waitrequest
-    input logic [31:0] master_readdata
-    input logic master_readdatavalid
-    */
-
-    /* Outputs
-    
-    output logic slave_waitrequest
-    output logic [31:0] slave_readdata
-    output logic [31:0] master_address
-    output logic master_read
-    output logic master_write
-    output logic [31:0] master_writedata
-    */
-
+    // --- Clock ---
     always #5 clk = ~clk;
 
     initial begin
@@ -56,43 +57,43 @@ module tb_rtl_dot();
 
         rst_n = 1'b1;
 
-        //IDLE Initalizing
+        //IDLE Initializing
 
-        master_waitrequest = 1'b1;
+        master_waitrequest   = 1'b1;
         master_readdatavalid = 1'b0;
 
-        master2_waitrequest = 1'b1;
+        master2_waitrequest   = 1'b1;
         master2_readdatavalid = 1'b0;
 
-        slave_write = 4'd1;
-        slave_address = 4'd2;
+        slave_write     = 4'd1;
+        slave_address   = 4'd2;
         slave_writedata = 32'd1;
 
         #10
 
-        assert(dut.w_address === 32'd1)
+        assert(dut.w_address === 32'd1);
 
-        slave_address = 4'd3;
+        slave_address   = 4'd3;
         slave_writedata = 32'd256;
         
         #10
 
-        assert(dut.a_address === 32'd256)
+        assert(dut.a_address === 32'd256);
 
-        slave_address = 4'd5;
+        slave_address   = 4'd5;
         slave_writedata = 32'd3;
 
         #10
 
-        assert(dut.v_length === 32'd3)
+        assert(dut.v_length === 32'd3);
 
-        slave_address = 4'd0;
-        slave_write = 4'd0;
+        slave_address   = 4'd0;
+        slave_write     = 4'd0;
 
         //IDLE to IDLE
         #10
 
-        slave_write = 4'd1;
+        slave_write     = 4'd1;
 
         assert(slave_readdata === 0);
         assert(slave_waitrequest === 0);
@@ -149,7 +150,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000001_0000000000000000;
+        master_readdata      = 32'b0000000000000001_0000000000000000;
 
         //STORE to READ_A
         #10
@@ -198,7 +199,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_0000000000000000;
+        master_readdata      = 32'b0000000000000011_0000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -258,7 +259,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000010_0000000000000000;
+        master_readdata      = 32'b0000000000000010_0000000000000000;
 
         //STORE to READ_A
         #10
@@ -307,7 +308,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000010_0000000000000000;
+        master_readdata      = 32'b0000000000000010_0000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -368,7 +369,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_0000000000000000;
+        master_readdata      = 32'b0000000000000011_0000000000000000;
 
         //STORE to READ_A
         #10
@@ -417,7 +418,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000001_0000000000000000;
+        master_readdata      = 32'b0000000000000001_0000000000000000;
 
         //STORE to CALCULATE (CYCLE 3 COMPLETE)
         #10
@@ -491,7 +492,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000001_1000000000000000;
+        master_readdata      = 32'b0000000000000001_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -540,7 +541,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_1000000000000000;
+        master_readdata      = 32'b0000000000000011_1000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -600,7 +601,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000010_1000000000000000;
+        master_readdata      = 32'b0000000000000010_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -649,7 +650,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000010_1000000000000000;
+        master_readdata      = 32'b0000000000000010_1000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -710,7 +711,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_1000000000000000;
+        master_readdata      = 32'b0000000000000011_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -759,7 +760,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000001_1000000000000000;
+        master_readdata      = 32'b0000000000000001_1000000000000000;
 
         //STORE to CALCULATE (CYCLE 3 COMPLETE)
         #10
@@ -833,7 +834,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b1111111111111110_1000000000000000;
+        master_readdata      = 32'b1111111111111110_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -882,7 +883,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_1000000000000000;
+        master_readdata      = 32'b0000000000000011_1000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -905,9 +906,6 @@ module tb_rtl_dot();
             $display("Result is wrong. Got %b", dut.multiplication_result);
 
         assert(dut.truncucated_result === 32'b1111111111111010_1100000000000000)
-
-        //else
-           // $display("Result is wrong. Got %b", dut.truncucated_result);
 
         //CALCULATE to READ_W (CYCLE 1 COMPLETE)
         #10
@@ -955,7 +953,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b1111111111111101_1000000000000000;
+        master_readdata      = 32'b1111111111111101_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -1004,7 +1002,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000010_1000000000000000;
+        master_readdata      = 32'b0000000000000010_1000000000000000;
 
         //STORE to CALCULATE
         #10
@@ -1065,7 +1063,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000011_1000000000000000;
+        master_readdata      = 32'b0000000000000011_1000000000000000;
 
         //STORE to READ_A
         #10
@@ -1114,7 +1112,7 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
 
         master_readdatavalid = 1'b1;
-        master_readdata = 32'b0000000000000001_1000000000000000;
+        master_readdata      = 32'b0000000000000001_1000000000000000;
 
         //STORE to CALCULATE (CYCLE 3 COMPLETE)
         #10
@@ -1139,5 +1137,4 @@ module tb_rtl_dot();
         assert(master_writedata === 0);
         $stop;
     end
-
 endmodule: tb_rtl_dot
