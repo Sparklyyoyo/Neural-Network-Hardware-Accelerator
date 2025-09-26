@@ -21,7 +21,7 @@ This project implements a **deep neural network (DNN) accelerator** for an embed
 
 ## Background
 
-Modern DNN inference demands **low-latency, high-throughput hardware acceleration**. FPGAs offer flexibility and parallelism that make them ideal for embedded accelerators. This project focuses on designing a system-on-chip (SoC) that integrates a soft-core processor (Nios II) with a DNN accelerator, leveraging Avalon memory-mapped interfaces to interact with SDRAM and peripherals efficiently.
+Modern DNN inference demands **low-latency, high-throughput hardware acceleration**. FPGAs offer flexibility and parallelism that make them ideal for embedded accelerators. This project focuses on designing a system-on-chip (SoC) that integrates a soft-core processor (Nios II) with a DNN accelerator, leveraging Avalon memory-mapped interfaces to interact with SDRAM and peripherals efficiently. This was performed using the Intel Platform Designer present on Quartus.
 
 ---
 
@@ -76,11 +76,6 @@ The SoC integrates multiple components:
 - **VGA interface:** Visualizes results as pixel outputs via a memory-mapped Avalon interface.  
 
 The CPU orchestrates operations, loads input images and network weights into SDRAM, and triggers the accelerators to perform inference.
-
-
-Where `W` is the weight matrix, `a` is the input vector, `b` is the bias vector, and `a'` is the output activation vector.
-
-All computations are performed in **Q16.16 fixed-point format** to balance precision with hardware efficiency.
 
 ---
 
@@ -197,7 +192,7 @@ The project builds a complete FPGA-based Nios II system with:
 
 ---
 
-This project showcases **practical experience in FPGA-based deep learning acceleration**, combining low-level RTL design, system integration, and high-level software control—skills highly relevant to modern heterogeneous computing environments, such as AMD hardware accelerators.
+This project showcases **practical experience in FPGA-based deep learning acceleration**, combining low-level RTL design, system integration, and software control skills.
 
 
 ---
@@ -221,15 +216,3 @@ On the board, results are displayed via a 7-segment display or VGA output for vi
 3. Trigger inference via CPU or memory-mapped control registers.  
 4. Read output via the hex display or VGA module.  
 
----
-
-## Deliverables
-
-- **RTL designs:** Verilog modules for dot product, memory copy, and VGA interface  
-- **Nios II program:** C program to load data and control accelerators  
-- **Testbench:** Simulation testbench for verifying functionality  
-- **Documentation:** This README and supporting diagrams  
-
----
-
-This project demonstrates **practical FPGA design skills**, efficient memory management, and hardware acceleration for neural network inference, making it highly relevant for **hardware and embedded system engineering roles**, including positions in companies like AMD.
